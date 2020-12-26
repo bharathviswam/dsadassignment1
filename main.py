@@ -21,7 +21,7 @@ class customDict:
 		found_key = False
 		for index, record in enumerate(bucket): 
 			record_key, record_val = record 
-			
+			 
 			# check if the bucket has same key as 
 			# the key to be inserted 
 			if record_key == key: 
@@ -125,19 +125,19 @@ def printOutput(dict):
             if rowSplit[0] == 'bornIn':
                 bornInInput = int(rowSplit[1].strip())
                 bornCount = countBorn(dict.get_val("birth"),bornInInput)
-            if rowSplit[0] == 'diedIn':
+            elif rowSplit[0] == 'diedIn':
                 diedInInput = int(rowSplit[1].strip())
                 diedCount = countDied(dict.get_val("death"),diedInInput)
-            if rowSplit[0] == 'maxPopulation':
+            elif rowSplit[0] == 'maxPopulation':
                 maxPopYear = maxPop(dict.get_val("population")) 
                 arrMaxYearCount = [ maxPopYear, dict.get_val("population").get_val(str(maxPopYear)) ]
-            if rowSplit[0] == 'minPopulation':
+            elif rowSplit[0] == 'minPopulation':
                 minPopYear = minPop(dict.get_val("population")) 
                 arrMinYearCount = [ minPopYear, dict.get_val("population").get_val(str(minPopYear)) ]
-            if rowSplit[0] == 'maxBirth':
+            elif rowSplit[0] == 'maxBirth':
                 maxBirthYear = maxBirth(dict.get_val("birth")) 
                 maxBirthArray = [ maxBirthYear, dict.get_val("birth").get_val(str(maxBirthYear)) ]
-            if rowSplit[0] == 'maxDeath':
+            elif rowSplit[0] == 'maxDeath':
                 maxDeathYear = maxDeath(dict.get_val("death")) 
                 maxDeathArray = [ maxDeathYear, dict.get_val("death").get_val(str(maxDeathYear)) ]
 
@@ -213,6 +213,7 @@ def readInputData():
                 deathCountDict.set_val(rowSplit[3].split('-')[2], dcount+1)
                 if rowSplit[3].split('-')[2] not in deathYearArray:
                     deathYearArray.append(rowSplit[3].split('-')[2])
+
         maxPopDict = customDict(maxDeathYear - leastBirthYear)
         popInPrevYear = 0
         for i in range(leastBirthYear,maxDeathYear+1):
@@ -226,7 +227,8 @@ def readInputData():
         dictExtracted.set_val("population", maxPopDict)
         f.close()
         return dictExtracted
-        
+        for dictName in dictName.values():
+            
     except:
         print("Something went wrong while reading inputs")
         exit()
