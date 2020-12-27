@@ -1,5 +1,5 @@
 No. of people born in 1990: 1
-No. of people died in 1990: 0
+No. of people died in 1990: None
 Maximum population was in year 1990 with 8 people alive.
 Minimum population was in year 2000 with 2 people alive.
 Maximum births were in year 1931 with 4 people born.

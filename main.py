@@ -1,117 +1,198 @@
-class customDict: 
+class customDict(object):
+    """
+    custom implementation for dictionary
+    """
+    def __init__(self, size=1000):
+        """
+        use list as storage, each element is also a list which is used
+        to solve hash conflict
+        """
+        self.storage = [[] for _ in range(size)]
+        self.size = size
+        self.length = 0
 
-	# Create empty bucket list of given size 
-	def __init__(self, size): 
-		self.size = size 
-		self.hash_table = self.create_buckets() 
+    def __setitem__(self, key, value):
+        """
+        set key value, if conflict, append to the sub list
+        """
+        storage_idx = hash(key) % self.size
+        for ele in self.storage[storage_idx]:
+            if key == ele[0]:  # already exist, update it
+                ele[1] = value
+                break
+        else:
+            self.storage[storage_idx].append([key, value])
+            self.length += 1
+    
+    def __getitem__(self, key):
+        """
+        get by key, if not found, raise key error
+        :raise: KeyError
+        :return: value
+        """
+        storage_idx = hash(key) % self.size
+        for ele in self.storage[storage_idx]:
+            if ele[0] == key:
+                return ele[1]
 
-	def create_buckets(self): 
-		return [[] for _ in range(self.size)] 
+        raise KeyError('Key {} dont exist'.format(key))
+    
+    def __delitem__(self, key):
+        """
+        delete key value from current dictionary instance
+        :param key: str
+        :return: None
+        """
+        storage_idx = hash(key) % self.size
+        for sub_lst in self.storage[storage_idx]:
+            if key == sub_lst[0]:
+                self.storage[storage_idx].remove(sub_lst)
+                self.length -= 1
+                return
 
-	# Insert values into hash map 
-	def set_val(self, key, val): 
-		
-		# Get the index from the key 
-		# using hash function 
-		hashed_key = hash(key) % self.size 
-		
-		# Get the bucket corresponding to index 
-		bucket = self.hash_table[hashed_key] 
+        raise KeyError('Key {} dont exist'.format(key))
 
-		found_key = False
-		for index, record in enumerate(bucket): 
-			record_key, record_val = record 
-			 
-			# check if the bucket has same key as 
-			# the key to be inserted 
-			if record_key == key: 
-				found_key = True
-				break
+    def __contains__(self, key):
+        """
+        check if key exist in current diction
+        :param key: str
+        :return: boolean
+        """
+        storage_idx = hash(key) % self.size
+        for item in self.storage[storage_idx]:
+            if item[0] == key:
+                return True
+        return False
 
-		# If the bucket has same key as the key to be inserted, 
-		# Update the key value 
-		# Otherwise append the new key-value pair to the bucket 
-		if found_key: 
-			bucket[index] = (key, val) 
-		else: 
-			bucket.append((key, val)) 
+    def __len__(self):
+        """
+        return length
+        :return: int
+        """
+        return self.length
 
-	# Return searched value with specific key 
-	def get_val(self, key): 
-		
-		# Get the index from the key using 
-		# hash function 
-		hashed_key = hash(key) % self.size 
-		
-		# Get the bucket corresponding to index 
-		bucket = self.hash_table[hashed_key] 
+    def __iterate_kv(self):
+        """
+        return an iterator
+        :return: generator
+        """
+        for sub_lst in self.storage:
+            if not sub_lst:
+                continue
+            for item in sub_lst:
+                yield item
 
-		found_key = False
-		for index, record in enumerate(bucket): 
-			record_key, record_val = record 
-			
-			# check if the bucket has same key as 
-			# the key being searched 
-			if record_key == key: 
-				found_key = True
-				break
+    def __iter__(self):
+        """
+        return an iterator
+        :return: generator
+        """
+        for key_var in self.__iterate_kv():
+            yield key_var[0]
+    
+    def __str__(self):
+        """
+        str representation of the dictionary
+        :return: string
+        """
+        res = []
+        for ele in self.storage:
+            for key_value in ele:
+                if isinstance(key_value[0], str):
+                    key_str = '\'{}\''.format(key_value[0])
+                else:
+                    key_str = '{}'.format(key_value[0])
+                if isinstance(key_value[1], str):
+                    value_str = '\'{}\''.format(key_value[1])
+                else:
+                    value_str = '{}'.format(key_value[1])
 
-		# If the bucket has same key as the key being searched, 
-		# Return the value found 
-		# Otherwise indicate there was no record found 
-		if found_key: 
-			return record_val 
-		else: 
-			return 0
+                res.append('{}: {}'.format(key_str, value_str))
+        key_value_pairs_str = '{}'.format(', '.join(res))
+        return '{' + key_value_pairs_str + '}'
 
-	# To print the items of hash map 
-	def __str__(self): 
-		return "".join(str(item) for item in self.hash_table) 
+    def __repr__(self):
+        """
+        string representation of the class instances
+        :return: string
+        """
+        return self.__str__()
+
+    def keys(self):
+        """
+        get all keys as list
+        :return: list
+        """
+        return self.__iter__()
+
+    def values(self):
+        """
+        get all values as list
+        :return: list
+        """
+        for key_var in self.__iterate_kv():
+            yield key_var[1]
+
+    def items(self):
+        """
+        get all k:v as list
+        :return: list
+        """
+        return self.__iterate_kv()
+    
+    def get(self, key, defaultValue = None):
+        """
+        get value by key. If key is not found returns the defaultValue
+        :param key: str
+        :return: value or default value if the key is not found
+        """
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return defaultValue
 
 
 leastBirthYear = 3000                         # Finding the least birth year from the input provided
 maxDeathYear = 0
-birthYearArray = []
-deathYearArray = []
 recordCount = 0
+
 def countBorn(dict, year):
-    return dict.get_val(str(year))
+    return dict.get(str(year))
 
 def countDied(dict, year):
-    return dict.get_val(str(year))
+    return dict.get(str(year))
 
 def maxPop(dict):
     max = -1
     for i in range(leastBirthYear,maxDeathYear+1):
-        if dict.get_val(str(i)) > max:
-            max = dict.get_val(str(i))
+        if dict.get(str(i)) > max:
+            max = dict.get(str(i))
             maxPopYear = i
     return maxPopYear
 
 def minPop(dict):
-    min = dict.get_val(str(leastBirthYear))
+    min = dict.get(str(leastBirthYear))
     for i in range(leastBirthYear,maxDeathYear+1):
-        if dict.get_val(str(i)) < min:
-            min = dict.get_val(str(i))
+        if dict.get(str(i)) < min:
+            min = dict.get(str(i))
             minPopYear = i
     return minPopYear
 
 def maxBirth(dict):
     max = 0
-    for i in birthYearArray:
-        if dict.get_val(str(i)) > max:
-            max = dict.get_val(str(i))
-            maxBirthYear = i
+    for year in dict:
+        if dict.get(year) > max:
+            max = dict.get(year)
+            maxBirthYear = year
     return maxBirthYear
 
 def maxDeath(dict):
     max = 0
-    for i in deathYearArray:
-        if dict.get_val(str(i)) > max:
-            max = dict.get_val(str(i))
-            maxDeathYear = i
+    for year in dict:
+        if dict.get(year) > max:
+            max = dict.get(year)
+            maxDeathYear = year
     return maxDeathYear
-
 
 def printOutput(dict):
     try:
@@ -124,22 +205,22 @@ def printOutput(dict):
             rowSplit = line.split(':')
             if rowSplit[0] == 'bornIn':
                 bornInInput = int(rowSplit[1].strip())
-                bornCount = countBorn(dict.get_val("birth"),bornInInput)
-            elif rowSplit[0] == 'diedIn':
+                bornCount = countBorn(dict.get("birth"),bornInInput)
+            if rowSplit[0] == 'diedIn':
                 diedInInput = int(rowSplit[1].strip())
-                diedCount = countDied(dict.get_val("death"),diedInInput)
-            elif rowSplit[0] == 'maxPopulation':
-                maxPopYear = maxPop(dict.get_val("population")) 
-                arrMaxYearCount = [ maxPopYear, dict.get_val("population").get_val(str(maxPopYear)) ]
-            elif rowSplit[0] == 'minPopulation':
-                minPopYear = minPop(dict.get_val("population")) 
-                arrMinYearCount = [ minPopYear, dict.get_val("population").get_val(str(minPopYear)) ]
-            elif rowSplit[0] == 'maxBirth':
-                maxBirthYear = maxBirth(dict.get_val("birth")) 
-                maxBirthArray = [ maxBirthYear, dict.get_val("birth").get_val(str(maxBirthYear)) ]
-            elif rowSplit[0] == 'maxDeath':
-                maxDeathYear = maxDeath(dict.get_val("death")) 
-                maxDeathArray = [ maxDeathYear, dict.get_val("death").get_val(str(maxDeathYear)) ]
+                diedCount = countDied(dict.get("death"),diedInInput)
+            if rowSplit[0] == 'maxPopulation':
+                maxPopYear = maxPop(dict.get("population")) 
+                arrMaxYearCount = [ maxPopYear, dict.get("population").get(str(maxPopYear)) ]
+            if rowSplit[0] == 'minPopulation':
+                minPopYear = minPop(dict.get("population")) 
+                arrMinYearCount = [ minPopYear, dict.get("population").get(str(minPopYear)) ]
+            if rowSplit[0] == 'maxBirth':
+                maxBirthYear = maxBirth(dict.get("birth")) 
+                maxBirthArray = [ maxBirthYear, dict.get("birth").get(str(maxBirthYear)) ]
+            if rowSplit[0] == 'maxDeath':
+                maxDeathYear = maxDeath(dict.get("death")) 
+                maxDeathArray = [ maxDeathYear, dict.get("death").get(str(maxDeathYear)) ]
 
         #Writing to outputPS21.txt
         writeOutput = open("outputPS21.txt", "w")   #w will create file if it does not exist
@@ -168,11 +249,11 @@ def printOutput(dict):
         # Closing the file
         writeOutput.close()
         readPrompts.close()
-    except:
-        print("Something went wrong while writing output")
+    except Exception as e:
+        print("Error while writing output")
+        print(e)
         readPrompts.close()
         exit()
-
 
 def readInputData():
     try:
@@ -180,7 +261,7 @@ def readInputData():
             f = open('inputPS21.txt','r')
         except:
             print("File inputPS21.txt doesnot exist")
-        global leastBirthYear , deathYearArray, birthYearArray, maxDeathYear, recordCount
+        global leastBirthYear , maxDeathYear, recordCount
         leastBirthYear = 3000                         # Variable to store least birth year from the input provided
         maxDeathYear = 0                              # Variable to store Max Death year from the input provided
 
@@ -196,41 +277,42 @@ def readInputData():
                 if(maxDeathYear < int(rowSplit[3].split('-')[2]) ):
                     maxDeathYear = int(rowSplit[3].split('-')[2])
 
-
-
         birthCountDict = customDict(recordCount+1)
         deathCountDict = customDict(recordCount+1)
-        f.seek(0)                                                               # Read the file from the beginning
+        # Read the file from the beginning
+        f.seek(0)                                                               
         for line in f:
             line = line.strip()
             rowSplit = line.split(',')
-            bcount = birthCountDict.get_val(rowSplit[2].split('-')[2])
-            birthCountDict.set_val(rowSplit[2].split('-')[2], bcount+1)
-            if rowSplit[2].split('-')[2] not in birthYearArray:
-                birthYearArray.append(rowSplit[2].split('-')[2])
-            if(rowSplit[3] != ''):
-                dcount = deathCountDict.get_val(rowSplit[3].split('-')[2])   
-                deathCountDict.set_val(rowSplit[3].split('-')[2], dcount+1)
-                if rowSplit[3].split('-')[2] not in deathYearArray:
-                    deathYearArray.append(rowSplit[3].split('-')[2])
+            bYear = rowSplit[2].split('-')[2]
+            # getting birth count from dictionary. If key not found default value of 0 is taken
+            bcount = birthCountDict.get(bYear, 0)
+            birthCountDict[bYear] = bcount+1
 
-        maxPopDict = customDict(maxDeathYear - leastBirthYear)
+            if(rowSplit[3] != ''):
+                dYear = rowSplit[3].split('-')[2]
+                dcount = deathCountDict.get(dYear, 0)
+                deathCountDict[dYear] = dcount+1
+        
+        populationDictinary = customDict(maxDeathYear - leastBirthYear)
         popInPrevYear = 0
         for i in range(leastBirthYear,maxDeathYear+1):
-            popInThatYear = birthCountDict.get_val(str(i))-deathCountDict.get_val(str(i))
+            popInThatYear = birthCountDict.get(str(i),0)-deathCountDict.get(str(i),0)
             popInThatYear += popInPrevYear
-            maxPopDict.set_val(str(i), popInThatYear)
+            populationDictinary[str(i)] = popInThatYear
             popInPrevYear = popInThatYear
+        
         dictExtracted = customDict(3)
-        dictExtracted.set_val("birth", birthCountDict)
-        dictExtracted.set_val("death", deathCountDict)
-        dictExtracted.set_val("population", maxPopDict)
+        dictExtracted["birth"] = birthCountDict
+        dictExtracted["death"] = deathCountDict
+        dictExtracted["population"] = populationDictinary
+    
         f.close()
         return dictExtracted
-        for dictName in dictName.values():
-            
-    except:
-        print("Something went wrong while reading inputs")
+        
+    except Exception as e:
+        print("Error while reading input data")
+        print(e)
         exit()
 
 printOutput(readInputData())
