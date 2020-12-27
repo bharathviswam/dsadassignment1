@@ -1,4 +1,4 @@
-class customDict(object):
+class customDictionary(object):
     """
     custom implementation for dictionary
     """
@@ -151,10 +151,9 @@ class customDict(object):
         except KeyError:
             return defaultValue
 
-
-leastBirthYear = 3000                         # Finding the least birth year from the input provided
-maxDeathYear = 0
 recordCount = 0
+minYear = -1
+maxYear = 0
 
 def countBorn(dict, year):
     return dict.get(str(year))
@@ -164,15 +163,15 @@ def countDied(dict, year):
 
 def maxPop(dict):
     max = -1
-    for i in range(leastBirthYear,maxDeathYear+1):
+    for i in range(minYear,maxYear+1):
         if dict.get(str(i)) > max:
             max = dict.get(str(i))
             maxPopYear = i
     return maxPopYear
 
 def minPop(dict):
-    min = dict.get(str(leastBirthYear))
-    for i in range(leastBirthYear,maxDeathYear+1):
+    min = dict.get(str(minYear))
+    for i in range(minYear,maxYear+1):
         if dict.get(str(i)) < min:
             min = dict.get(str(i))
             minPopYear = i
@@ -206,19 +205,19 @@ def printOutput(dict):
             if rowSplit[0] == 'bornIn':
                 bornInInput = int(rowSplit[1].strip())
                 bornCount = countBorn(dict.get("birth"),bornInInput)
-            if rowSplit[0] == 'diedIn':
+            elif rowSplit[0] == 'diedIn':
                 diedInInput = int(rowSplit[1].strip())
                 diedCount = countDied(dict.get("death"),diedInInput)
-            if rowSplit[0] == 'maxPopulation':
+            elif rowSplit[0] == 'maxPopulation':
                 maxPopYear = maxPop(dict.get("population")) 
                 arrMaxYearCount = [ maxPopYear, dict.get("population").get(str(maxPopYear)) ]
-            if rowSplit[0] == 'minPopulation':
+            elif rowSplit[0] == 'minPopulation':
                 minPopYear = minPop(dict.get("population")) 
                 arrMinYearCount = [ minPopYear, dict.get("population").get(str(minPopYear)) ]
-            if rowSplit[0] == 'maxBirth':
+            elif rowSplit[0] == 'maxBirth':
                 maxBirthYear = maxBirth(dict.get("birth")) 
                 maxBirthArray = [ maxBirthYear, dict.get("birth").get(str(maxBirthYear)) ]
-            if rowSplit[0] == 'maxDeath':
+            elif rowSplit[0] == 'maxDeath':
                 maxDeathYear = maxDeath(dict.get("death")) 
                 maxDeathArray = [ maxDeathYear, dict.get("death").get(str(maxDeathYear)) ]
 
@@ -261,24 +260,29 @@ def readInputData():
             f = open('inputPS21.txt','r')
         except:
             print("File inputPS21.txt doesnot exist")
-        global leastBirthYear , maxDeathYear, recordCount
-        leastBirthYear = 3000                         # Variable to store least birth year from the input provided
-        maxDeathYear = 0                              # Variable to store Max Death year from the input provided
-
-
+        global recordCount, minYear, maxYear
+        
         # Used to find the maximum death year and least birth year from the inputs provides
         for line in f:
             recordCount+=1
             line = line.strip()
             rowSplit = line.split(',')
-            if(leastBirthYear > int(rowSplit[2].split('-')[2]) ):
-                leastBirthYear = int(rowSplit[2].split('-')[2])
+            if(minYear == -1):
+                minYear = int(rowSplit[2].split('-')[2])
+            
+            if(minYear > int(rowSplit[2].split('-')[2]) ):
+                minYear = int(rowSplit[2].split('-')[2])
+            if(int(rowSplit[2].split('-')[2]) > maxYear):
+                maxYear = int(rowSplit[2].split('-')[2])
+           
             if(rowSplit[3] != ''):
-                if(maxDeathYear < int(rowSplit[3].split('-')[2]) ):
-                    maxDeathYear = int(rowSplit[3].split('-')[2])
+                if(minYear > int(rowSplit[3].split('-')[2]) ):
+                    minYear = int(rowSplit[3].split('-')[2])
+                if(maxYear < int(rowSplit[3].split('-')[2]) ):
+                    maxYear = int(rowSplit[3].split('-')[2])
 
-        birthCountDict = customDict(recordCount+1)
-        deathCountDict = customDict(recordCount+1)
+        birthCountDict = customDictionary(recordCount+1)
+        deathCountDict = customDictionary(recordCount+1)
         # Read the file from the beginning
         f.seek(0)                                                               
         for line in f:
@@ -294,15 +298,15 @@ def readInputData():
                 dcount = deathCountDict.get(dYear, 0)
                 deathCountDict[dYear] = dcount+1
         
-        populationDictinary = customDict(maxDeathYear - leastBirthYear)
+        populationDictinary = customDictionary(maxYear - minYear)
         popInPrevYear = 0
-        for i in range(leastBirthYear,maxDeathYear+1):
+        for i in range(minYear,maxYear+1):
             popInThatYear = birthCountDict.get(str(i),0)-deathCountDict.get(str(i),0)
             popInThatYear += popInPrevYear
             populationDictinary[str(i)] = popInThatYear
             popInPrevYear = popInThatYear
         
-        dictExtracted = customDict(3)
+        dictExtracted = customDictionary(3)
         dictExtracted["birth"] = birthCountDict
         dictExtracted["death"] = deathCountDict
         dictExtracted["population"] = populationDictinary
