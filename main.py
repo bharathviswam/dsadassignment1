@@ -229,6 +229,7 @@ def printOutput(dict):
             readPrompts = open('promptsPS21.txt','r')
         except:
             print("File promptsPS21.txt doesnot exist")
+            exit()
         
         # Reading from promptsPS21.txt and calling appropriate functions for further processing
         for line in readPrompts:
@@ -292,6 +293,7 @@ def readInputData():
             f = open('inputPS21.txt','r')
         except:
             print("File inputPS21.txt doesnot exist")
+            exit()
         global recordCount, minYear, maxYear
         
         # Used to find the minimum and maximum year from the data set and also number of records.
